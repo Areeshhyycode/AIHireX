@@ -1,5 +1,9 @@
 import mongoose from "mongoose";
+import dns from "node:dns";
 import { env } from "@/lib/env";
+
+dns.setDefaultResultOrder("ipv4first");
+try { dns.setServers(["8.8.8.8", "1.1.1.1", "8.8.4.4"]); } catch {}
 
 type Cached = { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null };
 
@@ -13,6 +17,7 @@ export async function connectDB() {
     cached.promise = mongoose.connect(env.MONGODB_URI, {
       bufferCommands: false,
       maxPoolSize: 10,
+      serverSelectionTimeoutMS: 15000,
     });
   }
   cached.conn = await cached.promise;
