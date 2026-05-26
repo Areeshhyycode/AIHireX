@@ -21,6 +21,8 @@ type Props = {
   href?: string;
   variant?: Variant;
   size?: Size;
+  type?: "button" | "submit";
+  fullWidth?: boolean;
   className?: string;
   children: React.ReactNode;
 };
@@ -29,6 +31,8 @@ export function Button({
   href,
   variant = "primary",
   size = "md",
+  type = "button",
+  fullWidth = false,
   className,
   children,
 }: Props) {
@@ -36,8 +40,9 @@ export function Button({
     "inline-flex items-center justify-center rounded-lg font-medium transition-colors",
     variants[variant],
     sizes[size],
+    fullWidth && "w-full",
     className,
   );
   if (href) return <Link href={href} className={cls}>{children}</Link>;
-  return <button className={cls}>{children}</button>;
+  return <button type={type} className={cls}>{children}</button>;
 }
