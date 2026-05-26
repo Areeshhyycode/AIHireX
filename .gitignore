@@ -34,3 +34,7 @@ next-env.d.ts
 # uploads (local dev only)
 /uploads/
 /public/uploads/
+# dev/test artifacts
+_resp.html
+dev.log
+dev.err.log
