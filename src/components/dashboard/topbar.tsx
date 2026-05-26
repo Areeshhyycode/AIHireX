@@ -1,6 +1,12 @@
 import { Bell, Search } from "lucide-react";
 
-export function Topbar({ name = "Areesha" }: { name?: string }) {
+export function Topbar({
+  name = "Areesha",
+  role = "Candidate",
+}: {
+  name?: string;
+  role?: string;
+}) {
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
       <div className="relative w-full max-w-md">
@@ -25,7 +31,7 @@ export function Topbar({ name = "Areesha" }: { name?: string }) {
           </div>
           <div className="hidden text-sm sm:block">
             <div className="font-medium text-slate-900">{name}</div>
-            <div className="text-xs text-slate-500">Candidate</div>
+            <div className="text-xs text-slate-500">{role}</div>
           </div>
         </div>
       </div>
