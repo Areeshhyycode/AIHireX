@@ -23,6 +23,8 @@ type Props = {
   size?: Size;
   type?: "button" | "submit";
   fullWidth?: boolean;
+  disabled?: boolean;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
   children: React.ReactNode;
 };
@@ -33,16 +35,18 @@ export function Button({
   size = "md",
   type = "button",
   fullWidth = false,
+  disabled,
+  onClick,
   className,
   children,
 }: Props) {
   const cls = cn(
-    "inline-flex items-center justify-center rounded-lg font-medium transition-colors",
+    "inline-flex items-center justify-center rounded-lg font-medium transition-colors disabled:opacity-60 disabled:cursor-not-allowed",
     variants[variant],
     sizes[size],
     fullWidth && "w-full",
     className,
   );
   if (href) return <Link href={href} className={cls}>{children}</Link>;
-  return <button type={type} className={cls}>{children}</button>;
+  return <button type={type} disabled={disabled} onClick={onClick} className={cls}>{children}</button>;
 }
