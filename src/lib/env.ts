@@ -1,21 +1,34 @@
 import { z } from "zod";
 
 const schema = z.object({
-  MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
-  GROQ_API_KEY: z.string().min(1, "GROQ_API_KEY is required"),
-  NEXTAUTH_SECRET: z.string().min(16, "NEXTAUTH_SECRET too short"),
-  NEXTAUTH_URL: z.string().url().default("http://localhost:3000"),
+  // Core
+  MONGODB_URI: z.string().min(1),
+  // LLM
+  GROQ_API_KEY: z.string().min(1),
+  OPENAI_API_KEY: z.string().optional(),
+  HUGGINGFACE_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
+  // Vector + cache
+  PINECONE_API_KEY: z.string().optional(),
+  PINECONE_INDEX: z.string().optional(),
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  // Storage
+  CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
+  // Email + voice
+  RESEND_API_KEY: z.string().optional(),
+  ELEVENLABS_API_KEY: z.string().optional(),
+  // Clerk
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().optional(),
+  CLERK_SECRET_KEY: z.string().optional(),
 });
 
-const parsed = schema.safeParse({
-  MONGODB_URI: process.env.MONGODB_URI,
-  GROQ_API_KEY: process.env.GROQ_API_KEY,
-  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-});
+const parsed = schema.safeParse(process.env);
 
 if (!parsed.success) {
-  console.error("❌ Invalid environment variables:", parsed.error.flatten().fieldErrors);
+  console.error("❌ Invalid env:", parsed.error.flatten().fieldErrors);
   throw new Error("Invalid environment variables — check .env.local");
 }
 

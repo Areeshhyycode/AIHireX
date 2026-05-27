@@ -1,12 +1,23 @@
 import { Bell, Search } from "lucide-react";
+import { UserButton } from "@clerk/nextjs";
+import { getMe } from "@/lib/auth";
 
-export function Topbar({
-  name = "Areesha",
-  role = "Candidate",
+const roleLabel: Record<string, string> = {
+  candidate: "Candidate",
+  recruiter: "Recruiter",
+  admin: "Admin",
+};
+
+export async function Topbar({
+  fallbackName = "You",
+  fallbackRole = "Candidate",
 }: {
-  name?: string;
-  role?: string;
+  fallbackName?: string;
+  fallbackRole?: string;
 }) {
+  const me = await getMe();
+  const name = me?.name ?? fallbackName;
+  const role = me?.role ? roleLabel[me.role] : fallbackRole;
   return (
     <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
       <div className="relative w-full max-w-md">
@@ -25,15 +36,14 @@ export function Topbar({
           <Bell className="h-5 w-5" />
           <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-rose-500" />
         </button>
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-gradient-to-br from-brand-500 to-brand-700 text-center text-sm font-semibold leading-9 text-white">
-            {name.charAt(0)}
-          </div>
-          <div className="hidden text-sm sm:block">
-            <div className="font-medium text-slate-900">{name}</div>
-            <div className="text-xs text-slate-500">{role}</div>
-          </div>
+        <div className="hidden text-right text-sm sm:block">
+          <div className="font-medium text-slate-900">{name}</div>
+          <div className="text-xs text-slate-500">{role}</div>
         </div>
+        <UserButton
+          afterSignOutUrl="/"
+          appearance={{ elements: { avatarBox: "h-9 w-9" } }}
+        />
       </div>
     </header>
   );
