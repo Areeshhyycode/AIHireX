@@ -6,7 +6,7 @@ const prompts = [
   "Skills I should learn in the next 3 months",
 ];
 
-export function SuggestedPrompts() {
+export function SuggestedPrompts({ onPick }: { onPick?: (text: string) => void }) {
   return (
     <div>
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -16,6 +16,8 @@ export function SuggestedPrompts() {
         {prompts.map((p) => (
           <button
             key={p}
+            type="button"
+            onClick={() => onPick?.(p)}
             className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700"
           >
             {p}
