@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { User, Building2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,17 +9,29 @@ type Role = "candidate" | "recruiter";
 export function RoleChoice({ initial }: { initial: Role }) {
   const [role, setRole] = useState<Role>(initial);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
 
   async function save() {
     setLoading(true);
-    const res = await fetch("/api/me/role", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role }),
-    });
-    setLoading(false);
-    if (res.ok) router.push(role === "recruiter" ? "/recruiter" : "/candidate");
+    setError(null);
+    try {
+      const res = await fetch("/api/me/role", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({}));
+        setError(j?.error ?? `Failed (${res.status})`);
+        setLoading(false);
+        return;
+      }
+      // Full reload so Clerk session refreshes and layout guards see the new role.
+      window.location.assign(role === "recruiter" ? "/recruiter" : "/candidate");
+    } catch (e) {
+      setError((e as Error).message);
+      setLoading(false);
+    }
   }
 
   return (
@@ -36,6 +47,9 @@ export function RoleChoice({ initial }: { initial: Role }) {
       >
         {loading ? "Setting up..." : "Continue"}
       </button>
+      {error && (
+        <p className="text-center text-sm font-medium text-rose-600">{error}</p>
+      )}
     </div>
   );
 }

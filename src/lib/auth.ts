@@ -3,9 +3,13 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 export type Role = "candidate" | "recruiter" | "admin";
 
 export async function getRole(): Promise<Role | null> {
-  const { sessionClaims } = auth();
+  const { sessionClaims, userId } = auth();
+  if (!userId) return null;
   const meta = (sessionClaims?.publicMetadata ?? {}) as { role?: Role };
-  return meta.role ?? null;
+  if (meta.role) return meta.role;
+  // sessionClaims is cached in JWT — fall back to fresh user fetch (e.g. right after role-set)
+  const user = await currentUser();
+  return ((user?.publicMetadata as { role?: Role })?.role) ?? null;
 }
 
 export async function getMe() {
