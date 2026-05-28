@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { Upload, Loader2, FileText } from "lucide-react";
 
 type Props = {
-  onParsed: (text: string, fileName: string) => void;
+  onParsed: (data: { text: string; fileName: string; url?: string; pages?: number }) => void;
   disabled?: boolean;
 };
 
@@ -26,7 +26,7 @@ export function PdfPicker({ onParsed, disabled }: Props) {
       const res = await fetch("/api/resume/parse", { method: "POST", body: fd });
       const j = await res.json();
       if (!res.ok) throw new Error(j.error ?? "parse failed");
-      onParsed(j.text, file.name);
+      onParsed({ text: j.text, fileName: file.name, url: j.url, pages: j.pages });
     } catch (err) {
       setError((err as Error).message);
     } finally {

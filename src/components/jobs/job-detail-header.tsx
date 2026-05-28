@@ -1,8 +1,8 @@
 import { MapPin, Building2, BadgeCheck, Clock, Bookmark, Share2, ShieldCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { Job } from "@/components/jobs/job-card";
+import { ApplyButton } from "@/components/jobs/apply-button";
 
-export function JobDetailHeader({ job }: { job: Job }) {
+export function JobDetailHeader({ job, applied }: { job: Job; applied?: boolean }) {
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -37,7 +37,7 @@ export function JobDetailHeader({ job }: { job: Job }) {
           <button className="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-900">
             <Share2 className="h-4 w-4" />
           </button>
-          <Button size="lg">Apply with AI</Button>
+          <ApplyButton jobId={job.id} applied={applied} />
         </div>
       </div>
     </div>

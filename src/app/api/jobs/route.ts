@@ -4,6 +4,10 @@ import { connectDB } from "@/lib/db";
 import { JobModel } from "@/models/job";
 import { jobInput } from "@/lib/jobs/schema";
 import { getRole } from "@/lib/auth";
+import { embedOne } from "@/lib/embeddings";
+import { upsertJobVector } from "@/lib/pinecone";
+
+export const runtime = "nodejs";
 
 export async function GET(req: Request) {
   await connectDB();
@@ -34,5 +38,30 @@ export async function POST(req: Request) {
 
   await connectDB();
   const created = await JobModel.create({ ...parsed.data, recruiterId: userId });
+
+  // Best-effort: embed + upsert to Pinecone (don't fail the create if this errors)
+  if (created.status === "published") {
+    const text = [
+      created.title,
+      created.company,
+      created.description,
+      (created.tags ?? []).join(" "),
+    ].join("\n");
+    embedOne(text)
+      .then((vector) =>
+        upsertJobVector({
+          id: String(created._id),
+          vector,
+          metadata: {
+            title: created.title,
+            company: created.company,
+            location: created.location,
+            tags: created.tags ?? [],
+          },
+        }),
+      )
+      .catch((e) => console.warn("[pinecone] index skipped:", e.message));
+  }
+
   return NextResponse.json({ job: created }, { status: 201 });
 }

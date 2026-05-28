@@ -1,15 +1,32 @@
+import Link from "next/link";
+import { auth } from "@clerk/nextjs/server";
+import { Search, Users } from "lucide-react";
 import { Section } from "@/components/dashboard/section";
-import { ApplicantRow } from "@/components/recruiter/applicant-row";
-import { mockApplicants } from "@/lib/mock/recruiter";
-import { Search } from "lucide-react";
+import { EmptyState } from "@/components/dashboard/empty-state";
+import { listApplicantsForRecruiter, type ApplicationItem } from "@/lib/applications/fetch";
+import { cn } from "@/lib/utils";
 
-export default function ApplicantsPage() {
+export const dynamic = "force-dynamic";
+
+const tones: Record<ApplicationItem["status"], string> = {
+  applied: "bg-slate-100 text-slate-700",
+  reviewing: "bg-amber-100 text-amber-700",
+  interview: "bg-blue-100 text-blue-700",
+  offer: "bg-emerald-100 text-emerald-700",
+  rejected: "bg-rose-100 text-rose-700",
+  withdrawn: "bg-slate-100 text-slate-500",
+};
+
+export default async function ApplicantsPage() {
+  const { userId } = auth();
+  const apps = userId ? await listApplicantsForRecruiter(userId) : [];
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Applicants</h1>
         <p className="mt-1 text-sm text-slate-500">
-          {mockApplicants.length} candidates · AI-ranked by match score · fake/spam filtered
+          {apps.length} candidate{apps.length === 1 ? "" : "s"} across your jobs
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white p-3">
@@ -21,35 +38,57 @@ export default function ApplicantsPage() {
             className="h-10 w-full rounded-lg bg-slate-50 pl-9 pr-3 text-sm outline-none focus:bg-white"
           />
         </div>
-        <select className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm">
-          <option>All jobs</option>
-          <option>Senior Frontend Engineer</option>
-          <option>Backend Engineer (Go)</option>
-          <option>Product Designer</option>
-        </select>
-        <select className="h-10 rounded-lg border border-slate-200 bg-white px-3 text-sm">
-          <option>All stages</option>
-          <option>Applied</option>
-          <option>Reviewed</option>
-          <option>Interview</option>
-          <option>Offer</option>
-          <option>Rejected</option>
-        </select>
       </div>
       <Section title="Candidates">
-        <div className="-mx-4">
-          <div className="grid grid-cols-12 gap-3 border-b border-slate-200 px-4 pb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            <span className="col-span-4">Candidate</span>
-            <span className="col-span-3">Applied for</span>
-            <span className="col-span-1">Match</span>
-            <span className="col-span-1">Resume</span>
-            <span className="col-span-1">Risk</span>
-            <span className="col-span-2 text-center">Stage</span>
+        {apps.length === 0 ? (
+          <EmptyState
+            icon={Users}
+            title="No applicants yet"
+            body="Once candidates apply to your jobs, they'll appear here, ranked by AI match."
+            ctaLabel="Post a job"
+            ctaHref="/recruiter/jobs/new"
+          />
+        ) : (
+          <div className="space-y-2">
+            {apps.map((a) => (
+              <Link
+                key={a.id}
+                href={`/recruiter/applicants/${a.id}`}
+                className="flex items-center justify-between rounded-lg border border-slate-100 px-4 py-3 hover:bg-slate-50"
+              >
+                <div>
+                  <p className="font-medium text-slate-900">
+                    {a.candidateName ?? a.candidateEmail ?? "Anonymous"}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Applied for <span className="font-medium">{a.jobTitle}</span>
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {a.resumeUrl && (
+                    <a
+                      href={a.resumeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-xs font-medium text-brand-600 hover:underline"
+                    >
+                      Resume
+                    </a>
+                  )}
+                  <span
+                    className={cn(
+                      "rounded-full px-2.5 py-0.5 text-xs font-medium capitalize",
+                      tones[a.status],
+                    )}
+                  >
+                    {a.status}
+                  </span>
+                </div>
+              </Link>
+            ))}
           </div>
-          {mockApplicants.map((a) => (
-            <ApplicantRow key={a.id} a={a} />
-          ))}
-        </div>
+        )}
       </Section>
     </div>
   );

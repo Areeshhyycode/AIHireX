@@ -19,6 +19,8 @@ type Result = {
 
 export function AnalyzerClient() {
   const [text, setText] = useState("");
+  const [resumeUrl, setResumeUrl] = useState<string | undefined>(undefined);
+  const [pages, setPages] = useState<number | undefined>(undefined);
   const [role, setRole] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,12 @@ export function AnalyzerClient() {
       const res = await fetch("/api/ai/resume/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, targetRole: role || undefined }),
+        body: JSON.stringify({
+          text,
+          targetRole: role || undefined,
+          resumeUrl,
+          pages,
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "AI failed");
@@ -59,7 +66,14 @@ export function AnalyzerClient() {
         />
         <div className="mt-4 flex items-center justify-between">
           <label className="block text-sm font-medium text-slate-700">Resume</label>
-          <PdfPicker onParsed={(t) => setText(t)} disabled={loading} />
+          <PdfPicker
+            onParsed={(d) => {
+              setText(d.text);
+              setResumeUrl(d.url);
+              setPages(d.pages);
+            }}
+            disabled={loading}
+          />
         </div>
         <textarea
           value={text}

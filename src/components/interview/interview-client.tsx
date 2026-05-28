@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send } from "lucide-react";
+import { Send, Volume2 } from "lucide-react";
 
 type Turn = { q: string; a: string };
 
@@ -10,7 +10,9 @@ export function InterviewClient({ role = "Senior Frontend Engineer" }: { role?: 
   const [question, setQuestion] = useState<string>("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
+  const [playing, setPlaying] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     askNext([]);
@@ -44,7 +46,33 @@ export function InterviewClient({ role = "Senior Frontend Engineer" }: { role?: 
     setTurns(next);
     setAnswer("");
     setQuestion("");
+    audioRef.current?.pause();
     await askNext(next);
+  }
+
+  async function playQuestion() {
+    if (!question || playing) return;
+    setPlaying(true);
+    try {
+      const res = await fetch("/api/ai/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: question }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+      audio.onended = () => {
+        setPlaying(false);
+        URL.revokeObjectURL(url);
+      };
+      audio.onerror = () => setPlaying(false);
+      await audio.play();
+    } catch {
+      setPlaying(false);
+    }
   }
 
   return (
@@ -64,7 +92,17 @@ export function InterviewClient({ role = "Senior Frontend Engineer" }: { role?: 
         ))}
         {question && (
           <div className="rounded-2xl bg-slate-100 px-4 py-2.5 text-sm">
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">Q{turns.length + 1}</p>
+            <div className="mb-1 flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Q{turns.length + 1}</p>
+              <button
+                onClick={playQuestion}
+                disabled={playing}
+                className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium text-brand-700 hover:bg-white disabled:opacity-50"
+              >
+                <Volume2 className="h-3.5 w-3.5" />
+                {playing ? "Playing..." : "Listen"}
+              </button>
+            </div>
             {question}
           </div>
         )}
