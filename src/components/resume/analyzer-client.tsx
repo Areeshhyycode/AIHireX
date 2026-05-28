@@ -5,6 +5,7 @@ import { Sparkles } from "lucide-react";
 import { ScoreRing } from "@/components/resume/score-ring";
 import { ScoreBreakdown } from "@/components/resume/score-breakdown";
 import { IssueItem, type Issue } from "@/components/resume/issue-item";
+import { PdfPicker } from "@/components/resume/pdf-picker";
 import { Section } from "@/components/dashboard/section";
 import { Button } from "@/components/ui/button";
 
@@ -56,14 +57,20 @@ export function AnalyzerClient() {
           placeholder="Senior Frontend Engineer"
           className="mt-1.5 h-11 w-full rounded-lg border border-slate-300 px-3 text-sm outline-none focus:border-brand-500"
         />
-        <label className="mt-4 block text-sm font-medium text-slate-700">Paste resume text</label>
+        <div className="mt-4 flex items-center justify-between">
+          <label className="block text-sm font-medium text-slate-700">Resume</label>
+          <PdfPicker onParsed={(t) => setText(t)} disabled={loading} />
+        </div>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={10}
-          placeholder="Paste your resume here. PDF upload coming soon."
+          placeholder="Upload a PDF above, or paste your resume text here..."
           className="mt-1.5 w-full rounded-lg border border-slate-300 p-3 text-sm outline-none focus:border-brand-500"
         />
+        {text.length > 0 && (
+          <p className="mt-1 text-xs text-slate-500">{text.length} characters</p>
+        )}
         {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
         <div className="mt-3 flex justify-end">
           <Button onClick={analyze} disabled={loading}>
