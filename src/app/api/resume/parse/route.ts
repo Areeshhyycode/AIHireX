@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { extractPdfText } from "@/lib/uploads/pdf-text";
+import { uploadBuffer } from "@/lib/cloudinary";
 
 export const runtime = "nodejs";
 
@@ -32,7 +33,18 @@ export async function POST(req: Request) {
         { status: 422 },
       );
     }
-    return NextResponse.json({ text, pages, chars: text.length });
+    let url: string | null = null;
+    try {
+      const up = await uploadBuffer(buf, {
+        folder: `aihirex/resumes/${userId}`,
+        publicId: `resume-${Date.now()}`,
+        resourceType: "raw",
+      });
+      url = up.secure_url;
+    } catch (e) {
+      console.warn("[resume/parse] Cloudinary upload skipped:", (e as Error).message);
+    }
+    return NextResponse.json({ text, pages, chars: text.length, url });
   } catch (e) {
     return NextResponse.json(
       { error: (e as Error).message ?? "parse failed" },
