@@ -2,8 +2,10 @@ import { headers } from "next/headers";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
 import { adminNav } from "@/lib/admin-nav";
+import { requireRole } from "@/lib/auth-guard";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await requireRole("admin");
   const pathname = headers().get("x-pathname") ?? "/admin";
   return (
     <div className="flex min-h-screen bg-slate-50">

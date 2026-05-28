@@ -19,7 +19,7 @@ export default function LoginPage() {
           },
         }}
         signUpUrl="/register"
-        afterSignInUrl="/candidate"
+        afterSignInUrl="/onboarding/role"
       />
     </div>
   );

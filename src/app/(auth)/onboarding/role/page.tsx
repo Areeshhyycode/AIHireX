@@ -1,8 +1,23 @@
+import { redirect } from "next/navigation";
 import { RoleChoice } from "@/components/auth/role-choice";
+import { getRole } from "@/lib/auth";
 
 type SP = { intent?: string };
 
-export default function RoleOnboardingPage({ searchParams }: { searchParams: SP }) {
+const dashFor = {
+  candidate: "/candidate",
+  recruiter: "/recruiter",
+  admin: "/admin",
+} as const;
+
+export default async function RoleOnboardingPage({
+  searchParams,
+}: {
+  searchParams: SP;
+}) {
+  const existing = await getRole();
+  if (existing) redirect(dashFor[existing]);
+
   const initial = searchParams?.intent === "recruiter" ? "recruiter" : "candidate";
   return (
     <div className="w-full max-w-2xl">

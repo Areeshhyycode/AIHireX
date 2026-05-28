@@ -2,12 +2,14 @@ import { headers } from "next/headers";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { Topbar } from "@/components/dashboard/topbar";
 import { recruiterNav } from "@/lib/recruiter-nav";
+import { requireRole } from "@/lib/auth-guard";
 
-export default function RecruiterLayout({
+export default async function RecruiterLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  await requireRole("recruiter");
   const pathname = headers().get("x-pathname") ?? "/recruiter";
   return (
     <div className="flex min-h-screen bg-slate-50">
