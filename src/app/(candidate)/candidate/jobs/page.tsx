@@ -7,12 +7,17 @@ import { mockJobs } from "@/lib/mock/jobs";
 
 export const dynamic = "force-dynamic";
 
-type SP = { q?: string };
+type SP = { q?: string; loc?: string };
 
 export default async function JobsPage({ searchParams }: { searchParams: SP }) {
-  const live = await listJobs({ q: searchParams?.q, limit: 50 });
+  const live = await listJobs({
+    q: searchParams?.q,
+    loc: searchParams?.loc,
+    limit: 50,
+  });
   const jobs = live.length > 0 ? live.map(toCardJob) : mockJobs;
   const isLive = live.length > 0;
+  const isSearching = Boolean(searchParams?.q || searchParams?.loc);
 
   return (
     <div className="space-y-6">
@@ -23,6 +28,11 @@ export default async function JobsPage({ searchParams }: { searchParams: SP }) {
         </p>
       </div>
       <JobsSearchBar />
+      {isSearching && live.length === 0 && (
+        <p className="text-sm text-slate-500">
+          No live jobs match your search — showing sample jobs below.
+        </p>
+      )}
       <div className="flex gap-6">
         <JobFilters />
         <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-1 xl:grid-cols-2">

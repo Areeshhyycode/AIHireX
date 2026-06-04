@@ -2,9 +2,10 @@ type Props = {
   title: string;
   desc: string;
   enabled?: boolean;
+  onToggle?: () => void;
 };
 
-export function ToggleRow({ title, desc, enabled = false }: Props) {
+export function ToggleRow({ title, desc, enabled = false, onToggle }: Props) {
   return (
     <div className="flex items-center justify-between gap-4 border-b border-slate-100 py-4 last:border-b-0">
       <div>
@@ -13,6 +14,7 @@ export function ToggleRow({ title, desc, enabled = false }: Props) {
       </div>
       <button
         type="button"
+        onClick={onToggle}
         className={
           "relative h-6 w-11 shrink-0 rounded-full transition " +
           (enabled ? "bg-brand-600" : "bg-slate-200")

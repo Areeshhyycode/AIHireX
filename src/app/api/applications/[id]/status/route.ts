@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import { ApplicationModel } from "@/models/application";
 import { sendInterviewEmail } from "@/lib/email/send";
+import { createNotification } from "@/lib/notifications/fetch";
 
 export const runtime = "nodejs";
 
@@ -34,6 +35,7 @@ export async function PATCH(
     ).lean<{
       candidateEmail?: string;
       candidateName?: string;
+      candidateClerkId?: string;
       jobTitle: string;
       company: string;
     } | null>();
@@ -46,6 +48,30 @@ export async function PATCH(
         jobTitle: doc.jobTitle,
         company: doc.company,
       }).catch((e) => console.warn("[email]", e.message));
+    }
+    const candidateId = (doc as { candidateClerkId?: string }).candidateClerkId;
+    if (candidateId) {
+      const map = {
+        applied: "Application received",
+        reviewing: "Recruiter is reviewing your application",
+        interview: `Interview invite: ${doc.jobTitle}`,
+        offer: `Offer: ${doc.jobTitle}`,
+        rejected: `Update: ${doc.jobTitle}`,
+      } as const;
+      const typeFor: Record<typeof parsed.data.status, "application" | "interview" | "offer" | "rejected" | "info"> = {
+        applied: "application",
+        reviewing: "info",
+        interview: "interview",
+        offer: "offer",
+        rejected: "rejected",
+      };
+      createNotification({
+        userId: candidateId,
+        type: typeFor[parsed.data.status],
+        title: map[parsed.data.status],
+        body: `${doc.company}`,
+        link: "/candidate/applications",
+      });
     }
     return NextResponse.json({ ok: true });
   } catch (e) {

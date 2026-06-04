@@ -13,6 +13,15 @@ const resumeSchema = new Schema(
   { _id: false },
 );
 
+const settingsSchema = new Schema(
+  {
+    emailNotifications: { type: Boolean, default: true },
+    weeklyDigest: { type: Boolean, default: true },
+    publicProfile: { type: Boolean, default: false },
+  },
+  { _id: false },
+);
+
 const userSchema = new Schema(
   {
     clerkId: { type: String, required: true, unique: true, index: true },
@@ -25,8 +34,16 @@ const userSchema = new Schema(
       index: true,
     },
     avatarUrl: { type: String },
+    headline: { type: String, trim: true },
+    bio: { type: String, trim: true },
+    location: { type: String, trim: true },
+    website: { type: String, trim: true },
+    github: { type: String, trim: true },
+    linkedin: { type: String, trim: true },
     skills: { type: [String], default: [] },
     resume: { type: resumeSchema, default: undefined },
+    savedJobs: { type: [Schema.Types.ObjectId], ref: "Job", default: [] },
+    settings: { type: settingsSchema, default: () => ({}) },
     companyId: { type: Schema.Types.ObjectId, ref: "Company" },
   },
   { timestamps: true },

@@ -8,6 +8,7 @@ import { ApplicationModel } from "@/models/application";
 import { getMe } from "@/lib/auth";
 import { getMyProfile, upsertMeProfile } from "@/lib/users/upsert";
 import { sendApplicationEmail } from "@/lib/email/send";
+import { createNotification } from "@/lib/notifications/fetch";
 
 export const runtime = "nodejs";
 
@@ -69,6 +70,22 @@ export async function POST(req: Request) {
         jobTitle: job.title,
         company: job.company,
       }).catch((e) => console.warn("[email]", e.message));
+    }
+    if (doc?._id) {
+      createNotification({
+        userId,
+        type: "application",
+        title: `Application sent: ${job.title}`,
+        body: `Your application to ${job.company} is in. We'll notify you on updates.`,
+        link: `/candidate/applications`,
+      });
+      createNotification({
+        userId: job.recruiterId,
+        type: "application",
+        title: `New applicant: ${job.title}`,
+        body: `${me?.name ?? "Someone"} applied to your job.`,
+        link: `/recruiter/applicants/${String(doc._id)}`,
+      });
     }
 
     return NextResponse.json({ ok: true, id: doc ? String(doc._id) : null });

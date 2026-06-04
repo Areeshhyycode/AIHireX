@@ -1,55 +1,78 @@
-import { ShieldCheck, BadgeCheck } from "lucide-react";
-import { Section } from "@/components/dashboard/section";
-import { VerifyStep } from "@/components/verification/verify-step";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { auth } from "@clerk/nextjs/server";
+import { ShieldCheck, AlertTriangle, Clock, BadgeCheck } from "lucide-react";
+import { connectDB } from "@/lib/db";
+import { CompanyModel } from "@/models/company";
+import { VerificationForm, type CompanyForm } from "@/components/verification/verification-form";
 
-export default function VerificationPage() {
+export const dynamic = "force-dynamic";
+
+type Doc = CompanyForm & {
+  status?: "pending" | "verified" | "rejected" | "suspicious";
+  rejectionReason?: string;
+};
+
+export default async function VerificationPage() {
+  const { userId } = auth();
+  await connectDB();
+  const doc = userId
+    ? ((await CompanyModel.findOne({ recruiterClerkId: userId }).lean()) as Doc | null)
+    : null;
+  const status = doc?.status ?? "none";
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Verification</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Company verification</h1>
         <p className="mt-1 text-sm text-slate-500">
           Verified companies get a blue tick, better visibility, and zero scam reports.
         </p>
       </div>
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-        <div className="flex items-center gap-3">
-          <div className="rounded-lg bg-emerald-500 p-2 text-white">
-            <ShieldCheck className="h-5 w-5" />
+
+      {status === "verified" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <div className="flex items-center gap-3">
+            <BadgeCheck className="h-6 w-6 text-emerald-600" />
+            <div>
+              <p className="font-semibold text-emerald-900">{doc?.name} is verified ✓</p>
+              <p className="text-xs text-emerald-800">You can post jobs and reach candidates.</p>
+            </div>
           </div>
-          <div>
-            <p className="font-semibold text-emerald-900">
-              Acme Inc. is{" "}
-              <BadgeCheck className="-mt-0.5 inline h-4 w-4" /> verified
-            </p>
-            <p className="text-xs text-emerald-800">
-              Trust score 98/100 · last reviewed 2 weeks ago
+        </div>
+      )}
+      {status === "pending" && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5">
+          <div className="flex items-center gap-3">
+            <Clock className="h-6 w-6 text-amber-600" />
+            <div>
+              <p className="font-semibold text-amber-900">Under review</p>
+              <p className="text-xs text-amber-800">AIHireX admin will verify {doc?.name} within 24 hours.</p>
+            </div>
+          </div>
+        </div>
+      )}
+      {status === "rejected" && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-6 w-6 text-rose-600" />
+            <div>
+              <p className="font-semibold text-rose-900">Verification rejected</p>
+              <p className="text-xs text-rose-800">{doc?.rejectionReason ?? "Please update your details and resubmit."}</p>
+            </div>
+          </div>
+        </div>
+      )}
+      {status === "none" && (
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="h-6 w-6 text-brand-600" />
+            <p className="text-sm font-medium text-slate-900">
+              Submit your company details below to start the verification process.
             </p>
           </div>
         </div>
-      </div>
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <Section title="Verification checklist" subtitle="6 of 7 steps complete">
-            <VerifyStep status="done" title="Official domain email" desc="hr@acme.com confirmed via DKIM + DNS check." />
-            <VerifyStep status="done" title="Company website" desc="acme.com · 8 years old · SSL valid · low spam score." />
-            <VerifyStep status="done" title="LinkedIn company page" desc="11,000+ followers · matches business records." />
-            <VerifyStep status="done" title="Business registration" desc="Registration #ABC-12345 verified." />
-            <VerifyStep status="done" title="Office address" desc="Confirmed via business registry + Google Maps." />
-            <VerifyStep status="in_progress" title="Admin review" desc="Final manual review by AIHireX team." />
-            <VerifyStep status="pending" title="Blue tick" desc="Granted automatically after admin review." />
-          </Section>
-        </div>
-        <Section title="Submit additional documents">
-          <div className="space-y-4">
-            <Input id="reg" label="Business registration #" placeholder="e.g. ABC-12345" />
-            <Input id="addr" label="Office address" placeholder="Street, City, Country" />
-            <Input id="li" label="LinkedIn company URL" placeholder="https://linkedin.com/company/..." />
-            <Button fullWidth>Submit for review</Button>
-          </div>
-        </Section>
-      </div>
+      )}
+
+      <VerificationForm initial={doc ?? {}} />
     </div>
   );
 }

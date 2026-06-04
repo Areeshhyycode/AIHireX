@@ -8,11 +8,23 @@ function toListItem(j: Record<string, unknown>): JobListItem {
   return { ...(j as Job), id: String((j as { _id: unknown })._id) };
 }
 
-export async function listJobs(opts: { q?: string; limit?: number } = {}) {
+export async function listJobs(opts: { q?: string; loc?: string; limit?: number } = {}) {
   try {
     await connectDB();
     const filter: Record<string, unknown> = { status: "published" };
-    if (opts.q) filter.$text = { $search: opts.q };
+    if (opts.q) {
+      const rx = new RegExp(opts.q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filter.$or = [
+        { title: rx },
+        { company: rx },
+        { description: rx },
+        { tags: { $in: [rx] } },
+      ];
+    }
+    if (opts.loc) {
+      const lrx = new RegExp(opts.loc.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      filter.location = lrx;
+    }
     const docs = await JobModel.find(filter)
       .sort({ createdAt: -1 })
       .limit(opts.limit ?? 30)

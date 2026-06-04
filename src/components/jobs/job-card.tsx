@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { MapPin, Building2, BadgeCheck, Clock, Bookmark } from "lucide-react";
+import { MapPin, Building2, BadgeCheck, Clock } from "lucide-react";
+import { BookmarkButton } from "@/components/jobs/bookmark-button";
 
 export type Job = {
   id: string;
@@ -44,9 +45,7 @@ export function JobCard({ job }: { job: Job }) {
             </span>
           </div>
         </div>
-        <button aria-label="Save" className="rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-brand-600">
-          <Bookmark className="h-4 w-4" />
-        </button>
+        <BookmarkButton jobId={job.id} />
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
         {job.tags.map((t) => (
