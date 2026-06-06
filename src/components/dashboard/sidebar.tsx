@@ -1,6 +1,7 @@
+import Link from "next/link";
 import { Logo } from "@/components/ui/logo";
 import { SidebarItem, type SidebarLink } from "@/components/dashboard/sidebar-item";
-import { LogOut } from "lucide-react";
+import { Repeat } from "lucide-react";
 
 export function Sidebar({
   items,
@@ -14,7 +15,7 @@ export function Sidebar({
       <div className="flex h-16 items-center px-6">
         <Logo />
       </div>
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
         {items.map((item) => (
           <SidebarItem
             key={item.href}
@@ -24,10 +25,13 @@ export function Sidebar({
         ))}
       </nav>
       <div className="border-t border-slate-200 p-3">
-        <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900">
-          <LogOut className="h-5 w-5 text-slate-400" />
-          Sign out
-        </button>
+        <Link
+          href="/onboarding/role?force=1"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+        >
+          <Repeat className="h-5 w-5 text-slate-400" />
+          Switch role
+        </Link>
       </div>
     </aside>
   );

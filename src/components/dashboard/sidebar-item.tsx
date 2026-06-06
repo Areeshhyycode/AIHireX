@@ -19,14 +19,22 @@ export function SidebarItem({
     <Link
       href={item.href}
       className={cn(
-        "flex items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition",
+        "group relative flex items-center justify-between rounded-xl px-3 py-2 text-sm font-medium transition-all",
         active
-          ? "bg-brand-50 text-brand-700"
+          ? "bg-gradient-to-r from-brand-50 to-violet-50 text-brand-700 shadow-sm"
           : "text-slate-600 hover:bg-slate-50 hover:text-slate-900",
       )}
     >
+      {active && (
+        <span className="absolute left-0 top-1/2 h-6 w-0.5 -translate-y-1/2 rounded-r-full bg-gradient-to-b from-brand-500 to-violet-500" />
+      )}
       <span className="flex items-center gap-3">
-        <span className={cn("h-5 w-5", active ? "text-brand-600" : "text-slate-400")}>
+        <span
+          className={cn(
+            "h-5 w-5 transition-colors",
+            active ? "text-brand-600" : "text-slate-400 group-hover:text-slate-600",
+          )}
+        >
           {item.icon}
         </span>
         {item.label}

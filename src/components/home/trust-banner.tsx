@@ -9,11 +9,16 @@ const items = [
 
 export function TrustBanner() {
   return (
-    <section className="border-y bg-white">
-      <div className="container-page py-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+    <section className="border-y border-slate-200 bg-white">
+      <div className="container-page grid grid-cols-2 gap-4 py-8 md:grid-cols-4">
         {items.map(({ icon: Icon, label }) => (
-          <div key={label} className="flex items-center gap-2 text-sm text-slate-700">
-            <Icon className="h-5 w-5 text-brand-600 shrink-0" />
+          <div
+            key={label}
+            className="flex items-center gap-3 text-sm font-medium text-slate-700"
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-brand-50 to-violet-50 text-brand-600 ring-1 ring-brand-100">
+              <Icon className="h-4 w-4" />
+            </div>
             <span>{label}</span>
           </div>
         ))}

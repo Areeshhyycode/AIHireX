@@ -10,10 +10,7 @@ build/
 dist/
 
 # env (NEVER commit secrets)
-.env
 .env*.local
-.env.development
-.env.production
 
 # debug / logs
 npm-debug.log*
@@ -38,3 +35,4 @@ next-env.d.ts
 _resp.html
 dev.log
 dev.err.log
+config.bat
