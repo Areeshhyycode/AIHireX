@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, ArrowRight, Play } from "lucide-react";
+import { ArrowRight, Play } from "lucide-react";
 
 export function Hero() {
   return (
@@ -11,10 +11,6 @@ export function Hero() {
 
       <div className="container-page relative py-24 lg:py-32">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white/80 px-3.5 py-1.5 text-xs font-medium text-brand-700 shadow-sm backdrop-blur">
-            <Sparkles className="h-3.5 w-3.5" />
-            Powered by Groq, Pinecone & ElevenLabs
-          </div>
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
             Hire smarter.{" "}
             <span className="bg-gradient-to-r from-brand-600 via-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
@@ -22,9 +18,8 @@ export function Hero() {
             </span>
           </h1>
           <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
-            AIHireX uses AI to analyze resumes, detect fake job posts, run mock
-            interviews and match candidates with verified recruiters — all in
-            one platform.
+            One platform. Real recruiters. Zero scams. AI does the boring half —
+            you just show up and shine.
           </p>
           <div className="mt-10 flex flex-wrap justify-center gap-3">
             <Button href="/register?role=candidate" size="lg">
