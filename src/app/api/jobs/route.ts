@@ -6,6 +6,7 @@ import { jobInput } from "@/lib/jobs/schema";
 import { getRole } from "@/lib/auth";
 import { embedOne } from "@/lib/embeddings";
 import { upsertJobVector } from "@/lib/pinecone";
+import { CompanyModel } from "@/models/company";
 
 export const runtime = "nodejs";
 
@@ -37,6 +38,22 @@ export async function POST(req: Request) {
   }
 
   await connectDB();
+
+  // Verification gate: recruiter must have a verified company to publish a job
+  const company = await CompanyModel.findOne({ recruiterClerkId: userId }).lean<{
+    status?: string;
+  } | null>();
+  if (!company || company.status !== "verified") {
+    return NextResponse.json(
+      {
+        error: "unverified",
+        message:
+          "Your company must be verified before posting jobs. Submit your company details at /recruiter/verification.",
+      },
+      { status: 403 },
+    );
+  }
+
   const created = await JobModel.create({ ...parsed.data, recruiterId: userId });
 
   // Best-effort: embed + upsert to Pinecone (don't fail the create if this errors)

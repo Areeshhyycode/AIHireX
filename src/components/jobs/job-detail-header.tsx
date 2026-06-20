@@ -1,6 +1,7 @@
-import { MapPin, Building2, BadgeCheck, Clock, Bookmark, Share2, ShieldCheck } from "lucide-react";
+import { MapPin, Building2, BadgeCheck, Clock, ShieldCheck } from "lucide-react";
 import type { Job } from "@/components/jobs/job-card";
 import { ApplyButton } from "@/components/jobs/apply-button";
+import { JobDetailActions } from "@/components/jobs/job-detail-actions";
 
 export function JobDetailHeader({ job, applied }: { job: Job; applied?: boolean }) {
   return (
@@ -31,13 +32,8 @@ export function JobDetailHeader({ job, applied }: { job: Job; applied?: boolean 
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button className="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-            <Bookmark className="h-4 w-4" />
-          </button>
-          <button className="rounded-lg border border-slate-200 p-2 text-slate-500 hover:bg-slate-50 hover:text-slate-900">
-            <Share2 className="h-4 w-4" />
-          </button>
-          <ApplyButton jobId={job.id} applied={applied} />
+          <JobDetailActions jobId={job.id} />
+          <ApplyButton jobId={job.id} jobTitle={job.title} company={job.company} applied={applied} />
         </div>
       </div>
     </div>

@@ -1,40 +1,22 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Sparkles, Check } from "lucide-react";
+import { ApplyModal } from "@/components/jobs/apply-modal";
 
 export function ApplyButton({
   jobId,
+  jobTitle = "this role",
+  company = "the company",
   applied: initialApplied,
 }: {
   jobId: string;
+  jobTitle?: string;
+  company?: string;
   applied?: boolean;
 }) {
   const [applied, setApplied] = useState(initialApplied ?? false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-
-  async function apply() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ jobId }),
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(json.error ?? "Failed");
-      setApplied(true);
-      router.refresh();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [open, setOpen] = useState(false);
 
   if (applied) {
     return (
@@ -43,17 +25,29 @@ export function ApplyButton({
       </div>
     );
   }
+
   return (
-    <div className="flex flex-col items-end gap-1">
+    <>
       <button
-        onClick={apply}
-        disabled={loading}
-        className="inline-flex h-12 items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+        onClick={() => setOpen(true)}
+        className="inline-flex h-12 items-center justify-center gap-1.5 rounded-lg bg-brand-600 px-5 text-sm font-semibold text-white hover:bg-brand-700"
       >
         <Sparkles className="h-4 w-4" />
-        {loading ? "Applying..." : "Apply with AI"}
+        Apply now
       </button>
-      {error && <p className="text-xs font-medium text-rose-600">{error}</p>}
-    </div>
+      {open && (
+        <ApplyModal
+          jobId={jobId}
+          jobTitle={jobTitle}
+          company={company}
+          onClose={() => {
+            setOpen(false);
+            // refresh state after potential apply
+            fetch(`/api/applications?check=${jobId}`).catch(() => null);
+            setApplied(true);
+          }}
+        />
+      )}
+    </>
   );
 }
