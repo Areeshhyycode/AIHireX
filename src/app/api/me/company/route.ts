@@ -7,14 +7,31 @@ import { createNotification } from "@/lib/notifications/fetch";
 
 export const runtime = "nodejs";
 
+// Helper: normalize a URL-ish field — accept "acme.com" or "https://acme.com"
+const flexibleUrl = z
+  .string()
+  .trim()
+  .max(200)
+  .optional()
+  .transform((v) => {
+    if (!v) return undefined;
+    if (/^https?:\/\//i.test(v)) return v;
+    return `https://${v}`;
+  });
+
 const schema = z.object({
-  name: z.string().min(2).max(120),
-  domain: z.string().max(120).optional(),
-  email: z.string().email().max(160),
-  website: z.string().url().max(200).optional(),
-  linkedin: z.string().max(200).optional(),
-  registrationNumber: z.string().max(60).optional(),
-  address: z.string().max(300).optional(),
+  name: z.string().trim().min(2, "Company name is required").max(120),
+  email: z.string().trim().email("A valid company email is required").max(160),
+  website: flexibleUrl,
+  description: z.string().trim().max(2000).optional(),
+  industry: z.string().trim().max(120).optional(),
+  size: z.string().trim().max(40).optional(),
+  address: z.string().trim().max(300).optional(),
+  contactName: z.string().trim().max(120).optional(),
+  contactPhone: z.string().trim().max(40).optional(),
+  linkedin: flexibleUrl,
+  registrationNumber: z.string().trim().max(60).optional(),
+  domain: z.string().trim().toLowerCase().max(120).optional(),
 });
 
 export async function GET() {
@@ -31,10 +48,26 @@ export async function POST(req: Request) {
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
+    const fieldErrors = parsed.error.flatten().fieldErrors;
+    const first = Object.entries(fieldErrors)
+      .map(([k, v]) => `${k}: ${(v as string[])?.[0]}`)
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(" · ");
     return NextResponse.json(
-      { error: "invalid", issues: parsed.error.flatten() },
+      {
+        error: "invalid",
+        message: first || "Some fields are missing or invalid.",
+        fields: fieldErrors,
+      },
       { status: 400 },
     );
+  }
+
+  const data = parsed.data;
+  // Derive domain from email if not supplied
+  if (!data.domain && data.email) {
+    data.domain = data.email.split("@")[1]?.toLowerCase();
   }
 
   await connectDB();
@@ -42,7 +75,7 @@ export async function POST(req: Request) {
     { recruiterClerkId: userId },
     {
       $set: {
-        ...parsed.data,
+        ...data,
         recruiterClerkId: userId,
         status: "pending",
         reviewedAt: undefined,
@@ -56,7 +89,7 @@ export async function POST(req: Request) {
     userId,
     type: "info",
     title: "Verification submitted",
-    body: `${parsed.data.name} is in review. We'll notify you on the decision.`,
+    body: `${data.name} is in review. We'll notify you on the decision.`,
     link: "/recruiter/verification",
   });
 
