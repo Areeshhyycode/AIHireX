@@ -67,8 +67,12 @@ export default async function CandidateDashboard() {
           </Section>
         </div>
         <Section
-          title="Recommended for you"
-          subtitle={recs.length ? "From verified recruiters" : "We'll suggest jobs after your resume"}
+          title="AI-matched opportunities"
+          subtitle={
+            recs.length
+              ? "Across your career tracks"
+              : "We'll suggest jobs after your resume"
+          }
           href={recs.length ? "/candidate/jobs" : undefined}
         >
           {recs.length ? (
